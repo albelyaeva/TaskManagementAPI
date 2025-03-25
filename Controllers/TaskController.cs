@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManagerAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/tasks")]
@@ -19,6 +20,7 @@ public class TaskController : ControllerBase
         return await _context.Tasks.ToListAsync();
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<TaskItem>> CreateTask(TaskItem task)
     {
@@ -32,6 +34,7 @@ public class TaskController : ControllerBase
         return CreatedAtAction(nameof(GetTasks), new { id = task.Id }, task);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTask(int id, TaskItem task)
     {
@@ -45,6 +48,7 @@ public class TaskController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
