@@ -28,6 +28,9 @@ public class TaskController : ControllerBase
         {
             return BadRequest("Title is required.");
         }
+        
+        if (task.DueDate.HasValue)
+            task.DueDate = task.DueDate.Value.ToUniversalTime();
 
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
@@ -36,16 +39,26 @@ public class TaskController : ControllerBase
 
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTask(int id, TaskItem task)
+    public async Task<IActionResult> UpdateTask(int id, TaskItem updatedTask)
     {
-        if (id != task.Id)
-        {
+        if (id != updatedTask.Id)
             return BadRequest();
+
+        _context.Entry(updatedTask).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!_context.Tasks.Any(e => e.Id == id))
+                return NotFound();
+            else
+                throw;
         }
 
-        _context.Entry(task).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return NoContent();
+        return Ok(updatedTask);
     }
 
     [Authorize]
